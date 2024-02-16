@@ -4,9 +4,10 @@ from scipy.fftpack import dct
 
 """ Библиотека работает с hash_size  4, 16, 64 или 256 """
 
-# ANTIALIAS -это фильтр, используемый в библиотеке Pillow для улучшения качества изображений при изменении их размера.
-# Он используется для сглаживания краев изображения и предотвращения появления артефактов при изменении размера. ANTIALIAS
-# был переименован в Lanczos в версии Pillow 2.7.0, но по-прежнему используется для улучшения качества изображений.
+# ANTIALIAS -это фильтр, используемый в библиотеке Pillow для улучшения качества изображений при изменении их
+# размера. Он используется для сглаживания краев изображения и предотвращения появления артефактов при изменении
+# размера. ANTIALIAS был переименован в Lanczos в версии Pillow 2.7.0, но по-прежнему используется для улучшения
+# качества изображений.
 
 try:
     ANTIALIAS = Image.Resampling.LANCZOS
@@ -15,7 +16,7 @@ except AttributeError:
 
 
 class ImageHash:
-    """Инкапсуляция хэша. Может использоваться для ключей словаря и сравнений."""
+    """ Инкапсуляция хэша. Может использоваться для ключей словаря и сравнений. """
 
     def __init__(self, binary_array: np.array):
         self.__binary_array = binary_array.flatten()
@@ -76,7 +77,6 @@ def uint_to_hash(integer: np.uint) -> ImageHash:
 def average_hash(image: Image.Image, hash_size: int) -> ImageHash:
     """
     Вычисление Average Hash
-
     @image должно быть экземпляром PIL.
     """
     if hash_size < 4:
@@ -98,7 +98,6 @@ def average_hash(image: Image.Image, hash_size: int) -> ImageHash:
 def phash(image: Image.Image, hash_size: int, midfreq_factor: int = 4) -> ImageHash:
     """
     Вычисление Perceptual hash
-
     @image должно быть экземпляром PIL.
     """
     if hash_size < 4:
@@ -117,9 +116,7 @@ def phash(image: Image.Image, hash_size: int, midfreq_factor: int = 4) -> ImageH
 def dhash(image: Image.Image, hash_size: int) -> ImageHash:
     """
     Вычисление Difference Hash
-
     вычисляет различия по горизонтали
-
     @image должно быть экземпляром PIL.
     """
     if hash_size < 4:

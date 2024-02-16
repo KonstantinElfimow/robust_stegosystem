@@ -13,19 +13,7 @@ from typing import Iterable, Callable
 import httpx
 import html.parser
 
-data = []
 
-HEADERS = {
-        'Accept': '*/*',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/120.0.0.0 Safari/537.36'
-}
-URL = 'https://ru.freepik.com/photos/котики'
-
-# IMAGES_FORMATS: tuple = tuple(['jpg', 'jpeg', 'png', 'bmp'])
-# LINK_PATTERN: str = r'https://.*?\.(' + '|'.join(IMAGES_FORMATS) + ')\?'
-#
-#
 # async def fetch_page_data(session, page: int):
 #     url = f'{URL}/{page}'
 #     print(f'[INFO] Парсинг страницы {page}')
@@ -93,13 +81,22 @@ URL = 'https://ru.freepik.com/photos/котики'
 #     df = pd.read_csv('images_links_13_02_2024_15_17.csv', sep=',', skipinitialspace=True)
 #     print(df)
 #     print(df.shape)
-    # req = requests.get(url, headers=headers)
-    # src = req.text
-    # with open('index.html', 'w', encoding='utf-16') as file:
-    #     file.write(src)
-    # lnk = 'https://img.freepik.com/free-photo/view-of-3d-adorable-cat-with-fluffy-clouds_23-2151113432.jpg'
-    # with open(basename(lnk), 'wb') as file:
-    #     file.write(requests.get(lnk).content)
+# req = requests.get(url, headers=headers)
+# src = req.text
+# with open('index.html', 'w', encoding='utf-16') as file:
+#     file.write(src)
+# lnk = 'https://img.freepik.com/free-photo/view-of-3d-adorable-cat-with-fluffy-clouds_23-2151113432.jpg'
+# with open(basename(lnk), 'wb') as file:
+#     file.write(requests.get(lnk).content)
+
+data = []
+
+HEADERS = {
+    'Accept': '*/*',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                  'Chrome/120.0.0.0 Safari/537.36'
+}
+URL = 'https://ru.freepik.com/photos/котики'
 
 ALLOWED_FORMATS: tuple = tuple(['jpg', 'jpeg', 'png', 'bmp'])
 LINK_PATTERN: str = r'https://.*?\.(' + '|'.join(ALLOWED_FORMATS) + ')\?'
@@ -164,7 +161,7 @@ class WebCrawler:
         new = urls - self.seen
         self.seen.update(new)
 
-        # await save to database or file here...
+        # Можно сохранить здесь в файл ссылки...
 
         for url in new:
             await self.put_todo(url)
@@ -184,7 +181,7 @@ class WebCrawler:
 async def main():
     response = requests.get(url=URL, headers=HEADERS)
     soup = BeautifulSoup(response.content, 'lxml')
-    pages_count = 1 # int(soup.find('span', {'class': 'pagination__pages'}).text)
+    pages_count = 1  # int(soup.find('span', {'class': 'pagination__pages'}).text)
 
     start = time.perf_counter()
     async with httpx.AsyncClient() as client:
@@ -198,12 +195,12 @@ async def main():
     end = time.perf_counter()
 
     seen = sorted(crawler.seen)
-    print('Results:')
+    print('Результат:')
     for url in seen:
         print(url)
-    print(f'Crawled: {len(crawler.done)} URLs')
-    print(f'Found: {len(seen)} URLs')
-    print(f'Done in {end - start:.2f}s')
+    print(f'Пройдено: {len(crawler.done)} URLs')
+    print(f'Найдено: {len(seen)} URLs')
+    print(f'Время сбора: {end - start:.2f} сек')
 
 
 if __name__ == '__main__':

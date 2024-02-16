@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.stats as st
+from scipy import stats
 
 
 def pca(features: np.ndarray, n_components: int):
@@ -30,3 +31,8 @@ def pca(features: np.ndarray, n_components: int):
                     .real
                     .astype(np.uint8))
     return new_features
+
+
+def conf_interval(p, n, alpha):
+    d = stats.norm.ppf(1 - alpha / 2) * ((p * (1 - p) / n) ** .5)
+    return (p - d), (p + d)

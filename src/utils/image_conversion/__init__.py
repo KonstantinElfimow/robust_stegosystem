@@ -32,3 +32,12 @@ def compress_with_pca(image: Image.Image, n_components: int) -> Image.Image:
             count += 1
     reconstructed_image = Image.fromarray(reconstruction)
     return reconstructed_image
+
+
+def bit_planes(image: Image.Image):
+    matrix = np.asarray(image, dtype=np.uint8)
+    # matrix = np.random.randint(0, 256, (2, 2))
+    binary_matrix = (np.unpackbits(matrix, axis=1)  # Преобразовываем числа в биты
+                     .reshape(tuple([*matrix.shape, 8]))  # Преобразовываем матрицу в трёхмерную плоскость
+                     .transpose((2, 0, 1)))  # Меняем оси местами и получаем нарезанные битовые области изображения
+    return binary_matrix
