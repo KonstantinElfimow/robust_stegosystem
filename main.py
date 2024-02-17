@@ -3,13 +3,10 @@ import base64
 import io
 import json
 import time
-import requests
 from dotenv import load_dotenv
 import os
 from PIL import Image
-
 from src.robust_hashing import ImageHash, phash
-from src.utils.image_metrics import bit_planes, complexity_metric
 
 load_dotenv()
 
@@ -176,6 +173,4 @@ def receiver():
 
 
 if __name__ == '__main__':
-    # get_images()
-    # complexity_metric()
     pass

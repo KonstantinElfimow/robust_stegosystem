@@ -8,10 +8,8 @@ import aiohttp
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-import urllib.parse
 from typing import Iterable, Callable
 import httpx
-import html.parser
 
 
 # async def fetch_page_data(session, page: int):
@@ -88,8 +86,6 @@ import html.parser
 # lnk = 'https://img.freepik.com/free-photo/view-of-3d-adorable-cat-with-fluffy-clouds_23-2151113432.jpg'
 # with open(basename(lnk), 'wb') as file:
 #     file.write(requests.get(lnk).content)
-
-data = []
 
 HEADERS = {
     'Accept': '*/*',
