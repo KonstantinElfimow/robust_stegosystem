@@ -6,7 +6,7 @@ from src.db.mongo_db import MongoDB
 from src.db.schema import UserValidator
 
 
-class StegoSystem:
+class ImageSystem:
     def __init__(self, *,
                  host: str = 'localhost',
                  port: int = 27017,
@@ -16,22 +16,14 @@ class StegoSystem:
 
     # Определить метод register_user для регистрации нового пользователя
     def add_image_to_db(self, *, data: dict) -> bool:
-
-        # Создать словарь, содержащий данные
-        data = {
-            'image': data['image'],
-            'registered_at': datetime.now()
-        }
-
         # Проверить данные пользователя с помощью схемы UserValidator
         try:
             UserValidator(**data)
         except ValidationError as ex:
-            print('[add_image_to_db] Ошибка валидации!')
             print(ex)
             return False
 
-        data['_id'] = hash(data.get('image'))
+        data['_id'] = hash(data.get('image_url'))
         # Вызвать метод create_object класса MongoDB для вставки данных в базу данных
         return self.db.create(data=data, collection='images')
 

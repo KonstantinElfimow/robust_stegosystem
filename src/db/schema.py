@@ -4,5 +4,8 @@ from pydantic import BaseModel
 
 
 class UserValidator(BaseModel):
-    image: str
-    registered_at: Optional[datetime.datetime]
+    image_url: str
+    complexity: float
+    average_hash: int
+    phash: int
+    dhash: int
