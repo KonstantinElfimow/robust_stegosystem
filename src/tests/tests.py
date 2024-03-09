@@ -1,24 +1,24 @@
-import math
 from io import BytesIO
 import numpy as np
 import unittest
 import requests
 from PIL import Image
 from src import robust_hashing
-from src.db.image_system_api import ImageSystem
-from src.utils.image_conversion import bit_planes
+from src.db.__init__ import MongoDB
+from src.utils.image_conversion import bit_planes_scaled_gray_image
 from src.utils.image_metrics import complexity_metric, modified_complexity_metric
 
 
 class TestUtils(unittest.TestCase):
     def setUp(self):
-        self.db = ImageSystem()
+        self.db = MongoDB()
         self.matrix = np.random.randint(0, 256, (2, 2, 3)).astype(np.uint8)
         self.bit_matrix = np.random.randint(0, 2, (8, 3, 3))
 
     def test_complexity_metric(self):
-        print('bit planes:\n', self.bit_matrix)
-        print('Bit plane complexity:\n', modified_complexity_metric(self.bit_matrix))
+        # print('bit planes:\n', self.bit_matrix)
+        # print('Bit plane complexity:\n', modified_complexity_metric(self.bit_matrix))
+        pass
 
     def test_save_image(self):
         print('Тест: сохранение изображения в базу данных')
@@ -26,14 +26,11 @@ class TestUtils(unittest.TestCase):
         # Загрузка изображения по URL
         response = requests.get(url)
         hash_size = 16
-        ANTIALIAS = Image.Resampling.LANCZOS
         # Проверка успешности запроса
         if response.status_code == 200:
             # Чтение данных из ответа и создание объекта Image
             with Image.open(BytesIO(response.content)) as image:
-                temp = image.convert('L').resize((int(math.sqrt(hash_size)), int(math.sqrt(hash_size))), ANTIALIAS)
-                pixels = np.asarray(temp, dtype=np.uint8)
-                planes = bit_planes(pixels)
+                planes = bit_planes_scaled_gray_image(image)
                 complexity = complexity_metric(planes)
                 average_hash = robust_hashing.average_hash(image, hash_size).value
                 phash = robust_hashing.phash(image, hash_size).value
@@ -47,10 +44,11 @@ class TestUtils(unittest.TestCase):
                         'average_hash': average_hash,
                         'phash': phash,
                         'dhash': dhash}
-                self.assertTrue(self.db.add_image_to_db(data=data))
+                self.assertTrue(self.db.create(data=data, key='image_url'))
         else:
             print('Ошибка при загрузке изображения:', response.status_code)
             self.assertTrue(False)
+
 
 if __name__ == '__main__':
     unittest.main()

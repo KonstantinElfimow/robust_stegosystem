@@ -1,6 +1,7 @@
 import asyncio
 import csv
 import datetime
+import json
 import os
 import random
 import re
@@ -9,7 +10,13 @@ from aiohttp import ClientSession
 from asyncio import Queue
 from bs4 import BeautifulSoup
 import time
-from main import HASH_SIZE
+
+
+with open('../../config.json', encoding='utf-8', mode='r') as f:
+    params = json.load(f)
+    MINIMUM_SIZE = 2 ** int(params['hash_size'])
+    del params
+
 
 HEADERS = {
     'Accept': '*/*',
@@ -17,15 +24,12 @@ HEADERS = {
 }
 URL = 'https://www.freepik.com/search'
 LINK_PATTERN: str = r'https://img.freepik.com/(premium-photo|free-photo)/[\w-]+\.(jpg|jpeg|bmp|png)'
-MINIMUM_SIZE = 2 ** HASH_SIZE
-TIMEOUT_LOWER_BOUND = 2
-TIMEOUT_UPPER_BOUND = 4
+
 
 FILE_PATH: str = ''
 if True:
     # Определение пути к директории на две директории выше текущей
     save_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-    save_dir = os.path.abspath(os.path.join(save_dir, os.pardir))
     save_dir = os.path.abspath(os.path.join(save_dir, os.pardir))
 
     # Добавление пути к папке ресурсов и папке с изображениями
@@ -42,7 +46,7 @@ if True:
 async def fetch_page_data(session: ClientSession, url: str, page: int) -> set:
     url = f'{url}&page={page}'
     async with session.get(url=url, headers=HEADERS) as response:
-        await asyncio.sleep(random.uniform(TIMEOUT_LOWER_BOUND, TIMEOUT_UPPER_BOUND))
+        await asyncio.sleep(random.uniform(2, 4))
         response_text = await response.text()
         soup = BeautifulSoup(response_text, 'lxml')
         image_links = set()

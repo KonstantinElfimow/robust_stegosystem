@@ -33,6 +33,7 @@ def pca(features: np.ndarray, n_components: int):
     return new_features
 
 
-def conf_interval(p, n, alpha):
+def conf_interval_for_probabilistic_problem(n, alpha, p=0.5) -> (float, float):
+    """ Функция позволяет определить доверительный интервал для задачи оценки вероятности событий """
     d = stats.norm.ppf(1 - alpha / 2) * ((p * (1 - p) / n) ** .5)
     return (p - d), (p + d)

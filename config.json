@@ -1,0 +1,16 @@
+{
+  "fill_db": {
+    "flag": true,
+    "source_filename": ""
+  },
+  "test_time": true,
+  "start_model": true,
+  "hash_size": 16,
+  "research_robust": true,
+  "mongo_db": {
+    "host": "localhost",
+    "port": 27017,
+    "db_name": "example",
+    "collection": "images"
+  }
+}
