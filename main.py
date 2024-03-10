@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import os
 from PIL import Image
 
-from src.db import MongoDB
+from src.db.mongo_db import MongoDB
 from src.db.singleton import MongoDBSingleton
 from src.fill_db import fill_db
 from src.research_robust import research_robust
@@ -64,8 +64,14 @@ if __name__ == '__main__':
     if params.get('mongo_db', None):
         singleton = MongoDBSingleton()
         singleton.db = MongoDB(**params['mongo_db'])
-    # if params.get('fill_db', None):
-    #     fill_db()
+    else:
+        raise ValueError('Добавьте настройку connection для MongoDB в config.json!')
+    if params.get('fill_db', None):
+        if params['fill_db']['flag']:
+            if params.get('hash_size', None):
+                fill_db(params['fill_db']['source_path'], params['hash_size'])
+            else:
+                raise ValueError('Добавьте hash_size в config.json')
     # if params.get('test_time', None):
     #     pass
     # if params.get('research_robust', None):

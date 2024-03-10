@@ -1,7 +1,7 @@
 {
   "fill_db": {
     "flag": true,
-    "source_filename": ""
+    "source_path": "C:\\Users\\kelfi\\PycharmProjects\\robust_stegosystem\\resources\\image_links\\images_links_10_03_2024_10_24.csv"
   },
   "test_time": true,
   "start_model": true,
@@ -10,7 +10,7 @@
   "mongo_db": {
     "host": "localhost",
     "port": 27017,
-    "db_name": "example",
+    "db_name": "prod",
     "collection": "images"
   }
 }

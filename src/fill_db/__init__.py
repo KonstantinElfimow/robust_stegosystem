@@ -1,78 +1,56 @@
-import threading
+from concurrent.futures import ThreadPoolExecutor
+import csv
+from io import BytesIO
+import requests
+from PIL import Image
+from src import robust_hashing
+from src.db.singleton import MongoDBSingleton
+from src.utils.image_conversion import bit_planes_scaled_gray_image
+from src.utils.image_metrics import complexity_metric
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-class DownloaderSingleton(object):
-    _instance = None
-
-    def __new__(cls):
-        """ Создает singleton объект, если он не создан,
-          или иначе возвращает предыдущий singleton объект """
-        if cls._instance is None:
-            cls._instance = super(DownloaderSingleton, cls).__new__(cls)
-        return cls._instance
-
-
-class ParallelDownloader(threading.Thread):
-    """ Download the images parallelly """
-
-    def __init__(self, thread_id, name, counter):
-        threading.Thread.__init__(self)
-        self.name = name
-
-    def run(self):
-        print('Начало потока: ', self.name)
-        # function to download the images
-        download_images(self.name)
-        print('Конец потока: ', self.name)
-
-
-def download_images(thread_name):
-    # singleton instance
-    singleton = DownloaderSingleton()
-    # visited_url has a set of URLs.
-    # Here we will fetch each URL and
-    # download the images in it.
-    while singleton.visited_url:
-        # pop the url to download the images
-        url = singleton.visited_url.pop()
-
-        http = httplib2.Http()
-        print(thread_name, 'Downloading images from', url)
-
-        try:
-            status, response = http.request(url)
-        except Exception:
-            continue
-
-        # parse the web page to find all images
-        bs = BeautifulSoup(response, "html.parser")
-
-        # Find all <img> tags
-        images = BeautifulSoup.findAll(bs, 'img')
-
-        for image in images:
-            src = image.get('src')
-            src = urljoin(url, src)
-
-            basename = os.path.basename(src)
-            print('basename:', basename)
-
-            if basename != '':
-                if src not in singleton.image_downloaded:
-                    singleton.image_downloaded.add(src)
-                    print('Downloading', src)
-                    # Download the images to local system
-                    urllib.request.urlretrieve(src, os.path.join('images', basename))
-                    print(thread_name, 'finished downloading images from', url)
+def download_images(urls, db, hash_size):
+    for url in urls:
+        response = requests.get(url)
+        if response.status_code == 200:
+            with Image.open(BytesIO(response.content)) as image:
+                planes = bit_planes_scaled_gray_image(image)
+                complexity = complexity_metric(planes)
+                average_hash = robust_hashing.average_hash(image, hash_size).value
+                phash = robust_hashing.phash(image, hash_size).value
+                dhash = robust_hashing.dhash(image, hash_size).value
+                data = {'image_url': url,
+                        'complexity': complexity,
+                        'average_hash': average_hash,
+                        'phash': phash,
+                        'dhash': dhash}
+                try:
+                    db.create(data=data, key='image_url')
+                    logger.info(f'{url}: успех!')
+                except Exception as e:
+                    logger.error(f'{url}: неудача! Error: {str(e)}')
+        else:
+            logger.error(f'{url}: неудача! HTTP status code: {response.status_code}')
 
 
-def fill_db():
-    singleton = DownloaderSingleton()
-    singleton.
+def load_csv_to_set(file_path):
+    data_set = set()
+    with open(file_path, 'r', newline='') as csvfile:
+        csv_reader = csv.reader(csvfile)
+        for row in csv_reader:
+            data_set.add(row[0])
+    return data_set
 
-    thread1 = ParallelDownloader(1, "Thread-1", 1)
-    thread2 = ParallelDownloader(2, "Thread-2", 2)
 
-    # Start new threads
-    thread1.start()
-    thread2.start()
+def fill_db(link_source: str, hash_size: int, batch_size: int = 10, max_workers: int = 3):
+    db = MongoDBSingleton().db
+    image_urls = load_csv_to_set(link_source)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        urls_batches = [list(image_urls)[i:i + batch_size] for i in range(0, len(image_urls), batch_size)]
+        for urls_batch in urls_batches:
+            executor.submit(download_images, urls_batch, db, hash_size)

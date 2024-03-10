@@ -1,24 +1,20 @@
+import json
 from io import BytesIO
-import numpy as np
 import unittest
 import requests
 from PIL import Image
 from src import robust_hashing
-from src.db.__init__ import MongoDB
+from src.db.mongo_db import MongoDB
 from src.utils.image_conversion import bit_planes_scaled_gray_image
-from src.utils.image_metrics import complexity_metric, modified_complexity_metric
+from src.utils.image_metrics import complexity_metric
 
 
 class TestUtils(unittest.TestCase):
     def setUp(self):
-        self.db = MongoDB()
-        self.matrix = np.random.randint(0, 256, (2, 2, 3)).astype(np.uint8)
-        self.bit_matrix = np.random.randint(0, 2, (8, 3, 3))
-
-    def test_complexity_metric(self):
-        # print('bit planes:\n', self.bit_matrix)
-        # print('Bit plane complexity:\n', modified_complexity_metric(self.bit_matrix))
-        pass
+        with open('config.json', encoding='utf-8', mode='r') as file:
+            params: dict = json.load(file)
+        if params.get('mongo_db', None):
+            self.db = MongoDB(**params['mongo_db'])
 
     def test_save_image(self):
         print('Тест: сохранение изображения в базу данных')

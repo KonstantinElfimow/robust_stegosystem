@@ -1,7 +1,6 @@
 import asyncio
 import csv
 import datetime
-import json
 import os
 import random
 import re
@@ -10,12 +9,6 @@ from aiohttp import ClientSession
 from asyncio import Queue
 from bs4 import BeautifulSoup
 import time
-
-
-with open('../../config.json', encoding='utf-8', mode='r') as f:
-    params = json.load(f)
-    MINIMUM_SIZE = 2 ** int(params['hash_size'])
-    del params
 
 
 HEADERS = {
@@ -70,8 +63,6 @@ async def gather_data(categories_queue: Queue) -> set:
     data = set()
     while not categories_queue.empty():
         obj = await categories_queue.get()
-        if len(data) > MINIMUM_SIZE:
-            return data
         async with aiohttp.ClientSession() as session:
             url = f'{URL}?query={obj}'
             response = await session.get(url=url, headers=HEADERS)
