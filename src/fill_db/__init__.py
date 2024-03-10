@@ -14,28 +14,27 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def download_images(urls, db, hash_size):
-    for url in urls:
-        response = requests.get(url)
-        if response.status_code == 200:
-            with Image.open(BytesIO(response.content)) as image:
-                planes = bit_planes_scaled_gray_image(image)
-                complexity = complexity_metric(planes)
-                average_hash = robust_hashing.average_hash(image, hash_size).value
-                phash = robust_hashing.phash(image, hash_size).value
-                dhash = robust_hashing.dhash(image, hash_size).value
-                data = {'image_url': url,
-                        'complexity': complexity,
-                        'average_hash': average_hash,
-                        'phash': phash,
-                        'dhash': dhash}
-                try:
-                    db.create(data=data, key='image_url')
-                    logger.info(f'{url}: успех!')
-                except Exception as e:
-                    logger.error(f'{url}: неудача! Error: {str(e)}')
-        else:
-            logger.error(f'{url}: неудача! HTTP status code: {response.status_code}')
+def download_images(url, db, hash_size):
+    response = requests.get(url)
+    if response.status_code == 200:
+        with Image.open(BytesIO(response.content)) as image:
+            planes = bit_planes_scaled_gray_image(image)
+            complexity = complexity_metric(planes)
+            average_hash = robust_hashing.average_hash(image, hash_size).value
+            phash = robust_hashing.phash(image, hash_size).value
+            dhash = robust_hashing.dhash(image, hash_size).value
+            data = {'image_url': url,
+                    'complexity': complexity,
+                    'average_hash': average_hash,
+                    'phash': phash,
+                    'dhash': dhash}
+            try:
+                db.create(data=data, key='image_url')
+                logger.info(f'{url}: успех!')
+            except Exception as e:
+                logger.error(f'{url}: неудача! Error: {str(e)}')
+    else:
+        logger.error(f'{url}: неудача! HTTP status code: {response.status_code}')
 
 
 def load_csv_to_set(file_path):
@@ -47,14 +46,11 @@ def load_csv_to_set(file_path):
     return data_set
 
 
-def fill_db(link_source: str, hash_size: int, batch_size: int = 10, max_workers: int = 3):
+def fill_db(link_source: str, hash_size: int, max_workers: int = 3):
     db = MongoDBSingleton().db
-    image_urls = load_csv_to_set(link_source)
+    source = load_csv_to_set(link_source)
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        urls_batches = [list(image_urls)[i:i + batch_size] for i in range(0, len(image_urls), batch_size)]
-        start = time.perf_counter()
-        for urls_batch in urls_batches:
-            executor.submit(download_images, urls_batch, db, hash_size)
-        end = time.perf_counter()
-        print(f'Время сбора: {end - start:.2f} сек')
+        while source:
+            url = source.pop()
+            executor.submit(download_images, url, db, hash_size)
