@@ -1,3 +1,4 @@
+import time
 from concurrent.futures import ThreadPoolExecutor
 import csv
 from io import BytesIO
@@ -52,5 +53,8 @@ def fill_db(link_source: str, hash_size: int, batch_size: int = 10, max_workers:
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         urls_batches = [list(image_urls)[i:i + batch_size] for i in range(0, len(image_urls), batch_size)]
+        start = time.perf_counter()
         for urls_batch in urls_batches:
             executor.submit(download_images, urls_batch, db, hash_size)
+        end = time.perf_counter()
+        print(f'Время сбора: {end - start:.2f} сек')

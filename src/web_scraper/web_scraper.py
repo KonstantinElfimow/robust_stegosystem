@@ -1,6 +1,7 @@
 import asyncio
 import csv
 import datetime
+import logging
 import os
 import random
 import re
@@ -10,6 +11,9 @@ from asyncio import Queue
 from bs4 import BeautifulSoup
 import time
 
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 HEADERS = {
     'Accept': '*/*',
@@ -39,6 +43,7 @@ if True:
 async def fetch_page_data(session: ClientSession, url: str, page: int) -> set:
     url = f'{url}&page={page}'
     async with session.get(url=url, headers=HEADERS) as response:
+        logger.info(f'{url}: в процессе!')
         await asyncio.sleep(random.uniform(2, 4))
         response_text = await response.text()
         soup = BeautifulSoup(response_text, 'lxml')
@@ -52,10 +57,10 @@ async def fetch_page_data(session: ClientSession, url: str, page: int) -> set:
                 if format_match:
                     link = image_url.split('?')[0]
                     image_links.add(link)
-                    print(link)
         except (AttributeError, Exception) as e:
-            print(f'An error occurred: {e}')
-
+            logger.error(f'{url}: неудача! Error: {str(e)}')
+        else:
+            logger.info(f'{url}: успех!')
         return image_links
 
 
@@ -67,13 +72,15 @@ async def gather_data(categories_queue: Queue) -> set:
             url = f'{URL}?query={obj}'
             response = await session.get(url=url, headers=HEADERS)
             soup = BeautifulSoup(await response.text(), 'lxml')
-            pages_count = int(soup.find('span', {'class': 'pagination__pages'}).text)
+            try:
+                pages_count = int(soup.find('span', {'class': 'pagination__pages'}).text)
 
-            tasks = [fetch_page_data(session, url, page) for page in range(1, pages_count + 1)]
-            results = await asyncio.gather(*tasks)
-            for result in results:
-                data.update(result)
-
+                tasks = [fetch_page_data(session, url, page) for page in range(1, pages_count + 1)]
+                results = await asyncio.gather(*tasks)
+                for result in results:
+                    data.update(result)
+            except (AttributeError, Exception) as e:
+                logger.error(f'{obj}: неудача! Error: {e}')
     return data
 
 
