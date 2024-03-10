@@ -72,12 +72,15 @@ if __name__ == '__main__':
                 fill_db(params['fill_db']['source_path'], params['hash_size'])
             else:
                 raise ValueError('Добавьте hash_size в config.json')
-    # if params.get('test_time', None):
-    #     pass
-    # if params.get('research_robust', None):
-    #     research_robust()
-    # if params.get('start_model', None):
-    #     load_dotenv()
-    #     key: int = int(os.environ.get('KEY'))
-    #     hash_size = params['hash_size']
-    #     start_model(hash_size, key)
+    if params.get('test_time', None):
+        if params['test_time']:
+            pass
+    if params.get('research_robust', None):
+        if params['research_robust']:
+            research_robust()
+    if params.get('start_model', None):
+        if params['start_model']:
+            load_dotenv()
+            key: int = int(os.environ.get('KEY'))
+            hash_size = params['hash_size']
+            start_model(hash_size, key)

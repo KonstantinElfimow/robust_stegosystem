@@ -1,6 +1,5 @@
 import hashlib
 from typing import Any, Mapping
-from pydantic import ValidationError
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
 from src.db.schema import UserValidator

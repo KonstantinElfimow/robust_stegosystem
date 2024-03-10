@@ -3,7 +3,7 @@ import numpy as np
 from src.robust_hashing import phash, dhash, average_hash
 from src.research_robust.save_graphic import build_graphic
 
-HASH_SIZE: int = 64
+HASH_SIZE: int = 16
 FILENAME: str = 'test.png'
 
 

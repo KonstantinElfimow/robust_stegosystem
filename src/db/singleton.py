@@ -1,6 +1,3 @@
-from src.db.mongo_db import MongoDB
-
-
 class MongoDBSingleton(object):
     _instance = None
 

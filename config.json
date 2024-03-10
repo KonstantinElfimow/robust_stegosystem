@@ -1,12 +1,12 @@
 {
   "fill_db": {
-    "flag": true,
+    "flag": false,
     "source_path": "C:\\Users\\kelfi\\PycharmProjects\\robust_stegosystem\\resources\\image_links\\images_links_10_03_2024_10_24.csv"
   },
-  "test_time": true,
+  "test_time": false,
   "start_model": true,
   "hash_size": 16,
-  "research_robust": true,
+  "research_robust": false,
   "mongo_db": {
     "host": "localhost",
     "port": 27017,
