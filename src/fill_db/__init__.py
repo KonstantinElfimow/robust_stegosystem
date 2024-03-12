@@ -1,9 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor
 import csv
-from io import BytesIO
+import io
 import requests
 from PIL import Image
-from src import robust_hashing
+from src.robust_hashing import average_hash, dhash, phash
 from src.db.singleton import MongoDBSingleton
 from src.utils.image_conversion import bit_planes_scaled_gray_image
 from src.utils.image_metrics import complexity_metric
@@ -16,17 +16,18 @@ logger = logging.getLogger(__name__)
 def download_images(url, db, hash_size):
     response = requests.get(url)
     if response.status_code == 200:
-        with Image.open(BytesIO(response.content)) as image:
+        with Image.open(io.BytesIO(response.content)) as image:
             planes = bit_planes_scaled_gray_image(image)
             complexity = complexity_metric(planes)
-            average_hash = robust_hashing.average_hash(image, hash_size).value
-            phash = robust_hashing.phash(image, hash_size).value
-            dhash = robust_hashing.dhash(image, hash_size).value
+            ah = average_hash(image, hash_size).value
+            ph = phash(image, hash_size).value
+            dh = dhash(image, hash_size).value
             data = {'image_url': url,
                     'complexity': complexity,
                     'average_hash': average_hash,
                     'phash': phash,
-                    'dhash': dhash}
+                    'dhash': dhash,
+                    'hash_size': hash_size}
             try:
                 db.create(data=data, key='image_url')
                 logger.info(f'{url}: успех!')
@@ -53,5 +54,3 @@ def fill_db(link_source: str, hash_size: int, max_workers: int = 3):
         while source:
             url = source.pop()
             executor.submit(download_images, url, db, hash_size)
-
-    return True

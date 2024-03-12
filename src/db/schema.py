@@ -7,3 +7,4 @@ class UserValidator(BaseModel):
     average_hash: int
     phash: int
     dhash: int
+    hash_size: int

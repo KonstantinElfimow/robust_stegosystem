@@ -1,16 +1,24 @@
 {
-  "fill_db": {
-    "flag": true,
-    "source_path": "C:\\Users\\ПК\\PycharmProjects\\robust_stegosystem\\resources\\image_links\\images_links_10_03_2024_22_15.csv"
-  },
-  "test_time": false,
-  "start_model": false,
-  "hash_size": 16,
-  "research_robust": false,
   "mongo_db": {
     "host": "localhost",
     "port": 27017,
     "db_name": "prod",
     "collection": "images"
+  },
+  "fill_db": {
+    "flag": false,
+    "hash_size": 16,
+    "source_path": "C:\\Users\\ПК\\PycharmProjects\\robust_stegosystem\\resources\\image_links\\images_links_10_03_2024_22_15.csv"
+  },
+  "test_time": {
+    "flag": false
+  },
+  "start_model": {
+    "flag": true,
+    "encoding_size_bytes": 1,
+    "hash_size": 16
+  },
+  "research_robust": {
+    "flag": false
   }
 }
