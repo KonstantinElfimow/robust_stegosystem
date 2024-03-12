@@ -29,7 +29,6 @@ def sender(hash_size: int, key: int):
 
 
 def receiver(hash_size: int, key: int):
-
     message_path: str = 'resources/message_recovered.txt'
 
     # Храним полученные хэши
@@ -58,26 +57,40 @@ def start_model(hash_size: int, key: int):
     flag = receiver(hash_size, key)
 
 
+def save_collection_to_json(filepath: str):
+    db = MongoDBSingleton().db
+    with open(filepath, encoding='utf-8', mode='w') as file:
+        json.dump(db.read_all(), file, indent=4, allow_nan=False, ensure_ascii=False)
+
+
 if __name__ == '__main__':
     with open('config.json', encoding='utf-8', mode='r') as file:
         params: dict = json.load(file)
+
     if params.get('mongo_db', None):
         singleton = MongoDBSingleton()
         singleton.db = MongoDB(**params['mongo_db'])
     else:
         raise ValueError('Добавьте настройку connection для MongoDB в config.json!')
+
     if params.get('fill_db', None):
         if params['fill_db']['flag']:
             if params.get('hash_size', None):
-                fill_db(params['fill_db']['source_path'], params['hash_size'])
+                flag = fill_db(params['fill_db']['source_path'], params['hash_size'])
+                if flag:
+                    filepath = './resources/repository/image_collection.json'
+                    save_collection_to_json(filepath)
             else:
                 raise ValueError('Добавьте hash_size в config.json')
+
     if params.get('test_time', None):
         if params['test_time']:
             pass
+
     if params.get('research_robust', None):
         if params['research_robust']:
             research_robust()
+
     if params.get('start_model', None):
         if params['start_model']:
             load_dotenv()

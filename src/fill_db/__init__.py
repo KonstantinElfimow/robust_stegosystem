@@ -1,4 +1,3 @@
-import time
 from concurrent.futures import ThreadPoolExecutor
 import csv
 from io import BytesIO
@@ -54,3 +53,5 @@ def fill_db(link_source: str, hash_size: int, max_workers: int = 3):
         while source:
             url = source.pop()
             executor.submit(download_images, url, db, hash_size)
+
+    return True

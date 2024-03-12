@@ -1,7 +1,5 @@
 import hashlib
-from typing import Any, Mapping
 from pymongo import MongoClient
-from pymongo.cursor import Cursor
 from src.db.schema import UserValidator
 
 
@@ -26,32 +24,36 @@ class MongoDB(object):
     def create(self, *, data: dict, key: str):
         data['_id'] = hashlib.sha256(data[key].encode('utf-8')).hexdigest()
         # Проверить, существует ли объект с таким же ключом
-        if self.client[self.collection].find_one({'_id': data['_id']}) is None:
-            UserValidator(**data)
-            # Если id такого документа не существует, добавить его в базу данных
+        UserValidator(**data)
+        try:
             self.client[self.collection].insert_one(data)
-        else:
+        except:
             raise Exception(f"Объект уже существует с _id: {data.get('_id')}")
 
-    def read_all(self) -> Cursor[Mapping[str, Any] | Any] | None:
+    def read_all(self) -> list[dict] | None:
         # Получить все данные из коллекции
         data = self.client[self.collection].find()
-        return data
+        # Преобразовать результаты запроса в список словарей
+        result = [doc for doc in data]
+        return result
 
-    def read(self, *, filt: dict) -> Cursor[Mapping[str, Any] | Any] | None:
-        data = self.client[self.collection].find(filt)
-        return data
+    def read(self, *, filt: dict) -> list[dict] | None:
+        try:
+            data = self.client[self.collection].find(filt)
+            result = [doc for doc in data]
+        except:
+            raise Exception(f'Объекты с фильтром ({filt}) не найдены!')
+        return result
 
     def update(self, *, filt: dict, upd: dict):
-        if self.client[self.collection].find(filt) is not None:
-            # Если объект существует, обновить его данные
+        try:
             self.client[self.collection].update(filt, {'$set': upd})
-        else:
-            raise Exception(f'Объекты с заданным фильтром не найдены!')
+        except:
+            raise Exception(f'Объекты с фильтром ({filt}) не найдены!')
 
     def delete(self, *, collection: str, filt: dict):
-        if self.client[collection].find(filt) is not None:
+        try:
             # Если объект существует, удалить его из базы данных
             self.client[collection].delete(filt)
-        else:
+        except:
             raise Exception(f'Объекты не найдены!')
