@@ -149,13 +149,13 @@ def main():
         if params['research_robust']['flag']:
             research_robust()
 
-    if params.get('start_model', None):
-        if params['start_model']['flag']:
+    if params.get('start_communication', None):
+        if params['start_communication']['flag']:
             load_dotenv()
             key: int = int(os.environ.get('KEY'))
 
-            size = params['start_model']['encoding_size_bytes']
-            hash_size = params['start_model']['hash_size']
+            size = params['start_communication']['encoding_size_bytes']
+            hash_size = params['start_communication']['hash_size']
             hash_method = dhash
             start_communication(size, key, hash_size, hash_method)
 

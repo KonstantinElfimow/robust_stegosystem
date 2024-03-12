@@ -13,7 +13,7 @@
   "test_time": {
     "flag": false
   },
-  "start_model": {
+  "start_communication": {
     "flag": true,
     "encoding_size_bytes": 1,
     "hash_size": 16
