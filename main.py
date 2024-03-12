@@ -50,7 +50,7 @@ def sender(bytes_size: int, key: int, hash_size: int, hash_method: Callable):
     df = pd.read_json(repository_path)
 
     np.random.seed(key)
-    message = ''.join(list(np.random.choice(list(ascii_letters + digits), size=16, replace=True)))
+    message = ''.join(list(np.random.choice(list(ascii_letters + digits), size=64, replace=True)))
     np.random.seed()
 
     if not is_correct_alphabet(message, bytes_size):
