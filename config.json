@@ -14,11 +14,11 @@
     "flag": false
   },
   "start_communication": {
-    "flag": true,
+    "flag": false,
     "encoding_size_bytes": 1,
     "hash_size": 16
   },
   "research_robust": {
-    "flag": false
+    "flag": true
   }
 }

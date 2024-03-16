@@ -1,8 +1,7 @@
 import logging
 from collections import deque
 import json
-from typing import Callable
-
+from typing import Dict, Callable
 import numpy as np
 import io
 import requests
@@ -45,12 +44,12 @@ def is_correct_alphabet(message: str, bytes_size: int) -> bool:
     return len(set(message) - alphabet) == 0
 
 
-def sender(bytes_size: int, key: int, hash_size: int, hash_method: Callable):
-    repository_path = './resources/repository/images.json'
-    df = pd.read_json(repository_path)
+def sender(bytes_size: int, key: int, hash_size: int, hash_method: Callable) -> str:
+    db = MongoDBSingleton().db
+    df = pd.read_json(io.StringIO(json.dumps(db.read_all())))
 
     np.random.seed(key)
-    message = ''.join(list(np.random.choice(list(ascii_letters + digits), size=64, replace=True)))
+    message = ''.join(list(np.random.choice(list(ascii_letters + digits), size=16, replace=True)))
     np.random.seed()
 
     if not is_correct_alphabet(message, bytes_size):
@@ -61,7 +60,7 @@ def sender(bytes_size: int, key: int, hash_size: int, hash_method: Callable):
         file.write(message)
 
     logger.info(f'Передатчик. Передаваемое сообщение: {message}')
-
+    logger.info(f'Передатчик. Применение симметричного ключа')
     np.random.seed(key)
     rand_l = deque(np.random.randint(0, 2 ** (bytes_size * 8), size=len(message)))
     np.random.seed()
@@ -79,11 +78,12 @@ def sender(bytes_size: int, key: int, hash_size: int, hash_method: Callable):
         context.append({'image_url': df.loc[index_row, 'image_url'].to_string(index=False), 'label': i})
     logger.info(f'Передатчик. context:\n{context}')
     logger.info('Передатчик. Передаём контекст приёмнику!')
-    return context
+    return json.dumps(context)
 
 
-def receiver(context: list[dict], bytes_size: int, key: int, hash_size: int, hash_method: Callable):
-    logger.info('Приёмник. Получаем контекст!')
+def receiver(context: str, bytes_size: int, key: int, hash_size: int, hash_method: Callable):
+    logger.info('Приёмник. Получаем и обрабатываем контекст!')
+    context = json.loads(context)
     # Организуем порядок в соответствии с меткой
     context.sort(key=lambda x: x['label'])
     # Храним полученные хэши
@@ -93,7 +93,7 @@ def receiver(context: list[dict], bytes_size: int, key: int, hash_size: int, has
         url = doc['image_url']
         response = requests.get(url)
         if response.status_code == 200:
-            logger.info(f'{url}: успех!')
+
             with Image.open(io.BytesIO(response.content)) as image:
                 hash_code = hash_type[hash_size](hash_method(image, hash_size).value)
                 hashes.append(hash_code)
@@ -101,11 +101,12 @@ def receiver(context: list[dict], bytes_size: int, key: int, hash_size: int, has
             logger.error(f'Приёмник. {url}: неудача! HTTP status code: {response.status_code}')
     # Декодируем сообщение
     buffer = io.StringIO()
-
+    logger.info(f'Приёмник. Дешифруем сообщение!')
+    logger.info(f'Приёмник. Применение симметричного ключа')
     np.random.seed(key)
     rand_l = deque(np.random.randint(0, 2 ** (bytes_size * 8), size=len(context)))
     np.random.seed()
-
+    logger.info(f'Приёмник. Сгенерированные числа: {rand_l}')
     uint_types = {1: np.uint8, 2: np.uint16, 4: np.uint32}
     for hash_code in hashes:
         rand = rand_l.popleft()
@@ -121,7 +122,7 @@ def receiver(context: list[dict], bytes_size: int, key: int, hash_size: int, has
 
 
 def start_communication(bytes_size: int, key: int, hash_size: int, hash_method: Callable):
-    context = sender(bytes_size, key, hash_size, hash_method)
+    context: str = sender(bytes_size, key, hash_size, hash_method)
     receiver(context, bytes_size, key, hash_size, hash_method)
 
 

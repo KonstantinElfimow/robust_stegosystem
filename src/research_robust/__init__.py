@@ -4,7 +4,7 @@ from src.robust_hashing import phash, dhash, average_hash
 from src.research_robust.save_graphic import build_graphic
 
 HASH_SIZE: int = 16
-FILENAME: str = 'test.png'
+FILENAME: str = 'src/research_robust/test.png'
 
 
 def research_robust() -> None:
@@ -23,7 +23,7 @@ def research_robust() -> None:
             distance_phash.append(h_phash - phash(image.rotate(d), hash_size=HASH_SIZE))
             distance_dhash.append(h_dhash - dhash(image.rotate(d), hash_size=HASH_SIZE))
 
-    build_graphic('Расстояние Хемминга при повороте изображения на заданный градус', degrees, 'Градус',
+    build_graphic('Поворот изображения на заданный градус', degrees, 'Градус',
                   distance_average_hash, distance_phash, distance_dhash, HASH_SIZE)
 
     # Преобразование изображения в массив NumPy
@@ -55,7 +55,7 @@ def research_robust() -> None:
                                                       .GaussianBlur(radius=r)),
                                               hash_size=HASH_SIZE))
 
-    build_graphic('Расстояние Хемминга при Гауссовском зашумлении изображения', radius, 'Радиус зашумления',
+    build_graphic('Гауссовское зашумлении изображения', radius, 'Радиус зашумления',
                   distance_average_hash, distance_phash, distance_dhash, HASH_SIZE)
     # Изменение яркости изображения (затемнение)
     lst = list(range(0, 100, 10))
@@ -69,13 +69,13 @@ def research_robust() -> None:
         distance_phash.append(h_phash - phash(enhancer, hash_size=HASH_SIZE))
         distance_dhash.append(h_dhash - dhash(enhancer, hash_size=HASH_SIZE))
 
-    with Image.open('compressed_image.png') as compressed:
-        print('Расстояние Хемминга Average hash при сравнении исходного изображения и скомпрессованного: ',
-              h_average_hash - average_hash(compressed, hash_size=HASH_SIZE), '.\n Размер хэш-кода: ', HASH_SIZE)
-        print('Расстояние Хемминга pHash при сравнении исходного изображения и скомпрессованного: ',
-              h_phash - phash(compressed, hash_size=HASH_SIZE), '.\n Размер хэш-кода: ', HASH_SIZE)
-        print('Расстояние Хемминга dHash при сравнении исходного изображения и скомпрессованного: ',
-              h_dhash - dhash(compressed, hash_size=HASH_SIZE), '.\n Размер хэш-кода: ', HASH_SIZE)
+    # with Image.open('compressed_image.png') as compressed:
+    #     print('Расстояние Хемминга Average hash при сравнении исходного изображения и скомпрессованного: ',
+    #           h_average_hash - average_hash(compressed, hash_size=HASH_SIZE), '.\n Размер хэш-кода: ', HASH_SIZE)
+    #     print('Расстояние Хемминга pHash при сравнении исходного изображения и скомпрессованного: ',
+    #           h_phash - phash(compressed, hash_size=HASH_SIZE), '.\n Размер хэш-кода: ', HASH_SIZE)
+    #     print('Расстояние Хемминга dHash при сравнении исходного изображения и скомпрессованного: ',
+    #           h_dhash - dhash(compressed, hash_size=HASH_SIZE), '.\n Размер хэш-кода: ', HASH_SIZE)
 
-    build_graphic('Расстояние Хемминга при изменении яркости изображения', lst, '% от начальной яркости',
+    build_graphic('Изменение яркости изображения', lst, '% от начальной яркости',
                   distance_average_hash, distance_phash, distance_dhash, HASH_SIZE)

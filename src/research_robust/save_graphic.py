@@ -27,4 +27,5 @@ def build_graphic(title: str,
     # включаем дополнительную сетку
     plt.grid(which='minor', linestyle=':')
     plt.tight_layout()
-    plt.savefig(f'results/{title}.png')
+    # plt.savefig(f'./results/{title}.png')
+    plt.show()
